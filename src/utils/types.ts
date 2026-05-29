@@ -7,6 +7,7 @@ export type IRect = { x: number; y: number; width: number; height: number };
 export type INonNullObject<T> = {
   [K in keyof T as T[K] extends null ? never : K]: T[K];
 };
+export type IEquals<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
 
 export function c<T>(value: unknown): T {
   return value as T;
