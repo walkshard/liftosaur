@@ -42,6 +42,9 @@ import { UrlUtils_build } from "./utils/url";
 import { AsyncQueue } from "./utils/asyncQueue";
 import { DeviceId_get } from "./utils/deviceId";
 
+// Import your custom backup service
+import { syncWorkoutData } from "./backupService";
+
 IndexedDBUtils_initializeForSafari();
 
 if ("serviceWorker" in navigator && (typeof window === "undefined" || window.location.protocol.startsWith("http"))) {
@@ -99,11 +102,22 @@ setTimeout(() => {
 }, 10000);
 
 (window as any).storeData = async (data: any) => {
+  // 1. Liftosaur's native local save logic
   IndexedDBUtils_set(await getIdbKey(userId, !!adminKey), typeof data === "string" ? data : JSON.stringify(data)).catch(
     (e) => {
       console.error(e);
     }
   );
+
+  // 2. Your custom cloud backup logic
+  try {
+    const parsedData = typeof data === "string" ? JSON.parse(data) : data;
+    if (parsedData) {
+      syncWorkoutData(parsedData);
+    }
+  } catch (error) {
+    console.error("Failed to sync data to custom backup endpoints:", error);
+  }
 };
 
 (window as any).clearData = async (data: any) => {
